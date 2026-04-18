@@ -8,8 +8,10 @@ type CounterCardProps = {
   onIncrement: () => void;
   onDecrement: () => void;
   isWinner: boolean;
+  isLeading: boolean;
   showTieMark: boolean;
   showConfetti: boolean;
+  isSpinning: boolean;
   children: React.ReactNode;
 };
 
@@ -20,13 +22,15 @@ function CounterCard({
   onIncrement,
   onDecrement,
   isWinner,
+  isLeading,
   showTieMark,
   showConfetti,
+  isSpinning,
   children,
 }: CounterCardProps) {
   return (
     <article
-      className={`counter-card${isWinner ? " counter-card--winner" : ""}${showTieMark ? " counter-card--tie" : ""}`}
+      className={`counter-card${isWinner ? " counter-card--winner" : ""}${isLeading ? " counter-card--leading" : ""}${showTieMark ? " counter-card--tie" : ""}`}
       aria-label={`${label} licznik`}
     >
       {showConfetti ? (
@@ -44,10 +48,13 @@ function CounterCard({
           X
         </div>
       ) : null}
-      <div className="counter-card__art">{children}</div>
+      <div
+        className={`counter-card__art${isSpinning ? " counter-card__art--spinning" : ""}`}
+      >
+        {children}
+      </div>
       <div className="counter-card__body">
         <div>
-          <p className="counter-card__eyebrow">Wypatrzone na spacerze</p>
           <h2>{label}</h2>
           <p className="counter-card__hint">{hint}</p>
         </div>
@@ -118,7 +125,7 @@ function AlufelgaIllustration() {
       viewBox="0 0 220 220"
       className="wheel wheel--alufelga"
       role="img"
-      aria-label="Ilustracja alufelgi inspirowanej wzorem Forda Kugi z 2025 roku"
+      aria-label="Ilustracja alufelgi z nowoczesnym wzorem ramion"
     >
       <circle cx="110" cy="110" r="98" className="wheel__shadow" />
       <circle cx="110" cy="110" r="84" className="wheel__outer" />
@@ -231,17 +238,52 @@ function AlufelgaIllustration() {
 function App() {
   const [kolpakCount, setKolpakCount] = useState(0);
   const [alufelgaCount, setAlufelgaCount] = useState(0);
+  const [isKolpakSpinning, setIsKolpakSpinning] = useState(false);
+  const [isAlufelgaSpinning, setIsAlufelgaSpinning] = useState(false);
   const [winner, setWinner] = useState<"kolpak" | "alufelga" | null>(null);
   const [showTie, setShowTie] = useState(false);
   const resultTimeoutRef = useRef<number | null>(null);
+  const kolpakSpinTimeoutRef = useRef<number | null>(null);
+  const alufelgaSpinTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {
       if (resultTimeoutRef.current !== null) {
         window.clearTimeout(resultTimeoutRef.current);
       }
+
+      if (kolpakSpinTimeoutRef.current !== null) {
+        window.clearTimeout(kolpakSpinTimeoutRef.current);
+      }
+
+      if (alufelgaSpinTimeoutRef.current !== null) {
+        window.clearTimeout(alufelgaSpinTimeoutRef.current);
+      }
     };
   }, []);
+
+  const triggerSpin = (wheelType: "kolpak" | "alufelga") => {
+    if (wheelType === "kolpak") {
+      setIsKolpakSpinning(true);
+      if (kolpakSpinTimeoutRef.current !== null) {
+        window.clearTimeout(kolpakSpinTimeoutRef.current);
+      }
+      kolpakSpinTimeoutRef.current = window.setTimeout(() => {
+        setIsKolpakSpinning(false);
+        kolpakSpinTimeoutRef.current = null;
+      }, 1000);
+      return;
+    }
+
+    setIsAlufelgaSpinning(true);
+    if (alufelgaSpinTimeoutRef.current !== null) {
+      window.clearTimeout(alufelgaSpinTimeoutRef.current);
+    }
+    alufelgaSpinTimeoutRef.current = window.setTimeout(() => {
+      setIsAlufelgaSpinning(false);
+      alufelgaSpinTimeoutRef.current = null;
+    }, 1000);
+  };
 
   const clearResultState = () => {
     setWinner(null);
@@ -281,38 +323,39 @@ function App() {
 
   return (
     <main className="app-shell">
-      <header className="hero-panel">
-        <p className="hero-panel__eyebrow">Spacerowy licznik aut</p>
-        <h1>Kołpak czy alufelga?</h1>
-        <p className="hero-panel__lead">
-          Dotykaj dużego przycisku, gdy coś wypatrzysz. Mniejszy przycisk służy
-          do poprawki.
-        </p>
-      </header>
-
       <section className="counter-grid" aria-label="Liczniki wypatrzonych aut">
         <CounterCard
           label="Kołpak"
           hint="Tu liczysz zwykłą stalową felgę bez ozdobnej alufelgi."
           count={kolpakCount}
-          onIncrement={() => setKolpakCount((current) => current + 1)}
+          onIncrement={() => {
+            setKolpakCount((current) => current + 1);
+            triggerSpin("kolpak");
+          }}
           onDecrement={() => setKolpakCount((current) => current - 1)}
           isWinner={winner === "kolpak"}
+          isLeading={kolpakCount > alufelgaCount}
           showTieMark={showTie}
           showConfetti={winner === "kolpak"}
+          isSpinning={isKolpakSpinning}
         >
           <KolpakIllustration />
         </CounterCard>
 
         <CounterCard
           label="Alufelga"
-          hint="Ilustracja inspirowana wzorem alufelgi Forda Kugi z 2025 roku."
+          hint="Nowoczesna alufelga z wyraźnym, dynamicznym układem ramion."
           count={alufelgaCount}
-          onIncrement={() => setAlufelgaCount((current) => current + 1)}
+          onIncrement={() => {
+            setAlufelgaCount((current) => current + 1);
+            triggerSpin("alufelga");
+          }}
           onDecrement={() => setAlufelgaCount((current) => current - 1)}
           isWinner={winner === "alufelga"}
+          isLeading={alufelgaCount > kolpakCount}
           showTieMark={showTie}
           showConfetti={winner === "alufelga"}
+          isSpinning={isAlufelgaSpinning}
         >
           <AlufelgaIllustration />
         </CounterCard>
@@ -336,6 +379,15 @@ function App() {
           Wynik
         </button>
       </div>
+
+      <section className="app-info" aria-label="Opis działania licznika">
+        <p className="app-info__eyebrow">Spacerowy licznik aut</p>
+        <h1>Kołpak czy alufelga?</h1>
+        <p className="app-info__lead">
+          Dotykaj dużego przycisku, gdy coś wypatrzysz. Mniejszy przycisk służy
+          do poprawki.
+        </p>
+      </section>
     </main>
   );
 }
