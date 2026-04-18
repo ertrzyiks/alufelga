@@ -79,6 +79,7 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   box-shadow: 0 14px 30px rgba(201, 72, 72, 0.24);
   transition:
     transform 0.18s ease,
@@ -95,8 +96,10 @@
 }
 
 .reset-button:focus-visible {
-  outline: 3px solid rgba(255, 142, 142, 0.56);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow:
+    0 14px 30px rgba(201, 72, 72, 0.24),
+    0 0 0 4px rgba(255, 142, 142, 0.48);
 }
 
 .result-button {
@@ -109,6 +112,7 @@
   font: inherit;
   font-weight: 800;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   box-shadow: 0 14px 30px rgba(82, 161, 56, 0.24);
   transition:
     transform 0.18s ease,
@@ -125,8 +129,10 @@
 }
 
 .result-button:focus-visible {
-  outline: 3px solid rgba(152, 230, 111, 0.52);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow:
+    0 14px 30px rgba(82, 161, 56, 0.24),
+    0 0 0 4px rgba(152, 230, 111, 0.46);
 }
 
 .counter-card {
@@ -323,6 +329,7 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
@@ -338,8 +345,8 @@
 }
 
 .counter-card__button:focus-visible {
-  outline: 3px solid rgba(25, 89, 155, 0.35);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(25, 89, 155, 0.28);
 }
 
 .counter-card__button--minus {
@@ -356,6 +363,12 @@
   color: #fff8f2;
   font-size: 1.45rem;
   box-shadow: 0 14px 30px rgba(255, 90, 54, 0.28);
+}
+
+.counter-card__button--plus:focus-visible {
+  box-shadow:
+    0 14px 30px rgba(255, 90, 54, 0.28),
+    0 0 0 4px rgba(25, 89, 155, 0.28);
 }
 
 .wheel {
@@ -490,6 +503,30 @@
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .counter-card__button:active {
+    box-shadow: 0 0 0 3px rgba(25, 89, 155, 0.16);
+  }
+
+  .counter-card__button--plus:active {
+    box-shadow:
+      0 14px 30px rgba(255, 90, 54, 0.28),
+      0 0 0 3px rgba(25, 89, 155, 0.16);
+  }
+
+  .reset-button:active {
+    box-shadow:
+      0 14px 30px rgba(201, 72, 72, 0.24),
+      0 0 0 3px rgba(255, 142, 142, 0.24);
+  }
+
+  .result-button:active {
+    box-shadow:
+      0 14px 30px rgba(82, 161, 56, 0.24),
+      0 0 0 3px rgba(152, 230, 111, 0.22);
   }
 }
 
