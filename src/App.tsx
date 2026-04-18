@@ -293,7 +293,9 @@ function AlufelgaIllustration() {
 }
 
 function App() {
-  const [kolpakCount, setKolpakCount] = useState(() => loadStoredCounters().kolpakCount);
+  const [kolpakCount, setKolpakCount] = useState(
+    () => loadStoredCounters().kolpakCount,
+  );
   const [alufelgaCount, setAlufelgaCount] = useState(
     () => loadStoredCounters().alufelgaCount,
   );
@@ -325,7 +327,10 @@ function App() {
 
   useEffect(() => {
     const nextCounters: StoredCounters = { kolpakCount, alufelgaCount };
-    window.localStorage.setItem(COUNTERS_STORAGE_KEY, JSON.stringify(nextCounters));
+    window.localStorage.setItem(
+      COUNTERS_STORAGE_KEY,
+      JSON.stringify(nextCounters),
+    );
   }, [kolpakCount, alufelgaCount]);
 
   const triggerSpin = (wheelType: "kolpak" | "alufelga") => {

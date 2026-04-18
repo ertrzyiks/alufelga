@@ -285,8 +285,7 @@
   opacity: 0;
   transform: translate(0, 0) scale(0.88);
   box-shadow: 0 10px 18px rgba(40, 104, 140, 0.22);
-  animation: increment-fly-to-score 0.88s cubic-bezier(0.17, 0.85, 0.32, 1)
-    both;
+  animation: increment-fly-to-score 0.88s cubic-bezier(0.17, 0.85, 0.32, 1) both;
 }
 
 .counter-card__body {
