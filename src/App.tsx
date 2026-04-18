@@ -1,12 +1,43 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
+const COUNTERS_STORAGE_KEY = "alufelga-counters-v1";
+
+type StoredCounters = {
+  kolpakCount: number;
+  alufelgaCount: number;
+};
+
+function loadStoredCounters(): StoredCounters {
+  const fallback: StoredCounters = { kolpakCount: 0, alufelgaCount: 0 };
+
+  try {
+    const raw = window.localStorage.getItem(COUNTERS_STORAGE_KEY);
+    if (!raw) {
+      return fallback;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<StoredCounters>;
+    const kolpakCount = Number.isFinite(parsed.kolpakCount)
+      ? Number(parsed.kolpakCount)
+      : 0;
+    const alufelgaCount = Number.isFinite(parsed.alufelgaCount)
+      ? Number(parsed.alufelgaCount)
+      : 0;
+
+    return { kolpakCount, alufelgaCount };
+  } catch {
+    return fallback;
+  }
+}
+
 type CounterCardProps = {
   label: string;
   hint: string;
   count: number;
   onIncrement: () => void;
   onDecrement: () => void;
+  incrementFxToken: number;
   isWinner: boolean;
   isLeading: boolean;
   showTieMark: boolean;
@@ -21,6 +52,7 @@ function CounterCard({
   count,
   onIncrement,
   onDecrement,
+  incrementFxToken,
   isWinner,
   isLeading,
   showTieMark,
@@ -28,6 +60,16 @@ function CounterCard({
   isSpinning,
   children,
 }: CounterCardProps) {
+  const [incrementFxIds, setIncrementFxIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (incrementFxToken === 0) {
+      return;
+    }
+
+    setIncrementFxIds((current) => [...current, incrementFxToken]);
+  }, [incrementFxToken]);
+
   return (
     <article
       className={`counter-card${isWinner ? " counter-card--winner" : ""}${isLeading ? " counter-card--leading" : ""}${showTieMark ? " counter-card--tie" : ""}`}
@@ -48,6 +90,21 @@ function CounterCard({
           X
         </div>
       ) : null}
+      <div className="counter-card__increment-fx-layer" aria-hidden="true">
+        {incrementFxIds.map((fxId) => (
+          <span
+            key={fxId}
+            className="counter-card__increment-fx"
+            onAnimationEnd={() => {
+              setIncrementFxIds((current) =>
+                current.filter((currentFxId) => currentFxId !== fxId),
+              );
+            }}
+          >
+            +1
+          </span>
+        ))}
+      </div>
       <div
         className={`counter-card__art${isSpinning ? " counter-card__art--spinning" : ""}`}
       >
@@ -236,10 +293,14 @@ function AlufelgaIllustration() {
 }
 
 function App() {
-  const [kolpakCount, setKolpakCount] = useState(0);
-  const [alufelgaCount, setAlufelgaCount] = useState(0);
+  const [kolpakCount, setKolpakCount] = useState(() => loadStoredCounters().kolpakCount);
+  const [alufelgaCount, setAlufelgaCount] = useState(
+    () => loadStoredCounters().alufelgaCount,
+  );
   const [isKolpakSpinning, setIsKolpakSpinning] = useState(false);
   const [isAlufelgaSpinning, setIsAlufelgaSpinning] = useState(false);
+  const [kolpakIncrementFxToken, setKolpakIncrementFxToken] = useState(0);
+  const [alufelgaIncrementFxToken, setAlufelgaIncrementFxToken] = useState(0);
   const [winner, setWinner] = useState<"kolpak" | "alufelga" | null>(null);
   const [showTie, setShowTie] = useState(false);
   const resultTimeoutRef = useRef<number | null>(null);
@@ -261,6 +322,11 @@ function App() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const nextCounters: StoredCounters = { kolpakCount, alufelgaCount };
+    window.localStorage.setItem(COUNTERS_STORAGE_KEY, JSON.stringify(nextCounters));
+  }, [kolpakCount, alufelgaCount]);
 
   const triggerSpin = (wheelType: "kolpak" | "alufelga") => {
     if (wheelType === "kolpak") {
@@ -330,9 +396,11 @@ function App() {
           count={kolpakCount}
           onIncrement={() => {
             setKolpakCount((current) => current + 1);
+            setKolpakIncrementFxToken((current) => current + 1);
             triggerSpin("kolpak");
           }}
           onDecrement={() => setKolpakCount((current) => current - 1)}
+          incrementFxToken={kolpakIncrementFxToken}
           isWinner={winner === "kolpak"}
           isLeading={kolpakCount > alufelgaCount}
           showTieMark={showTie}
@@ -348,9 +416,11 @@ function App() {
           count={alufelgaCount}
           onIncrement={() => {
             setAlufelgaCount((current) => current + 1);
+            setAlufelgaIncrementFxToken((current) => current + 1);
             triggerSpin("alufelga");
           }}
           onDecrement={() => setAlufelgaCount((current) => current - 1)}
+          incrementFxToken={alufelgaIncrementFxToken}
           isWinner={winner === "alufelga"}
           isLeading={alufelgaCount > kolpakCount}
           showTieMark={showTie}
